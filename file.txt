@@ -1,0 +1,745 @@
+/**************\
+ * Algorithms *
+\**************/
+
+// Given an array of objects summarizing the number of fish in an aquarium,
+// find the percent of fish where the species is unknown (the `species` is
+// `undefined`). Return the percentage as a whole number between `0` and `100`.
+
+// Example input:
+const fish = [
+  { species: 'Swordtail', count: 2 },
+  { species: 'Pearl Gourami', count: 1 },
+  { species: 'Rummynose Tetra', count: 12 },
+  { species: 'Neon Tetra', count: 30 },
+  { species: 'Guppy', count: 8 },
+  { species: 'Kribensis', count: 1 },
+  { species: 'Angelfish', count: 1 },
+  { species: undefined, count: 5 },
+];
+
+// Example output:
+// 8;
+
+// Solution:
+const percentUnknown = Math.trunc(100 * fish.find(obj => (obj.species == undefined))["count"] / fish.reduce((a,b) => {
+	return a + b.count;
+}, 0));
+
+
+/*****************\
+ * Algorithms II *
+\*****************/
+
+// There exists a function that, given an array of categories and an array of
+// entries, creates an array of objects with a category name and an entry count.
+
+// Example input (categories):
+const categories = [
+  { name: 'Cats', id: 10 },
+  { name: 'Dogs', id: 20 },
+  // ...
+];
+
+// Example input (entries):
+const entries = [
+  { categoryId: 10, name: 'Fluffy' },
+  { categoryId: 10, name: 'Mittens' },
+  // ...
+];
+
+// Example output:
+// [{ name: 'Cats', count: 42 }, { name: 'Dogs', count: 55 }, /* ... */];
+
+// The following example implementation has a performance problem noticeable
+// when you have hundreds of categories and tens of thousands of entries.
+
+const categoriesByEntryCount = (categories, entries) =>
+  categories.map(category => ({
+    name: category.name,
+    count: entries.filter(entry => entry.categoryId === category.id).length,
+  }));
+
+// What is the time complexity (in Big O notation or similarly described) of `categoriesByEntryCount`?
+const timeComplexity = O(n^2);
+
+// What is the optimum time complexity to do this task with a better algorithm?
+const optimumTimeComplexity = O(log n);
+
+// Please re-implement the algorithm to optimize its time complexity.
+
+const countCategoriesOptimized = (categories, entries) => {
+
+};
+
+
+
+/***********************\
+ * Regular Expressions *
+\***********************/
+
+// Given an array of 1,000 strings that may or may not contain phone numbers,
+// return the index of each string that appears to contain a U.S. phone number.
+// U.S. phone numbers are guaranteed to be formatted either as `(877) 843-2900`
+// or `877-843-2900`.
+
+// Example input:
+const strings = [
+  'Call today! Reach us at 314-867-5309 any day of the week.',
+  'Over 3,148,675,309 people trust ACME for all their road runner needs!',
+  '(877) 843-2900',
+  // ...
+];
+
+// Example output:
+// [0, 2, /* ... */];
+
+// Solution:
+const strings = [
+  'Call today! Reach us at 314-867-5309 any day of the week.',
+  'Over 3,148,675,309 people trust ACME for all their road runner needs!',
+  '(877) 843-2900',
+  '877-843-2900'
+];
+const regex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
+const phoneNumberIndices = strings.map((phoneNumber, index) => {
+	return (regex.test(phoneNumber) ? index : '');
+});
+console.log(phoneNumberIndices.filter(String));
+
+
+/*******\
+ * DOM *
+\*******/
+
+// Given an HTML element in the DOM, return the nearest visible
+// background color beneath the element's text.
+
+// Example input:
+document.getElementById('example');
+
+/* Example HTML:
+<div>
+  <div style="background: rgba(200, 100, 50, 0.95);">
+    <div style="background: transparent;">
+      <div style="background: none;">
+        <div style="background: rgba(0, 0, 0, 0);">
+          <div>
+            <div id="example">Text</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+*/
+
+// Example output:
+// 'rgba(200, 100, 50, 0.95)';
+
+// Solution:
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+<script type="text/javascript">
+  function getBackground(element) {
+    // Is current element's background color set?
+    let color = element.css("background-color");
+
+    if ((color !== 'rgba(0, 0, 0, 0)') && (color !== 'transparent')) {
+      // if so then return that color
+      return color;
+    }
+
+    // if not: are you at the body element?
+    if (!element.is("body")) {
+      // call getBackground with parent item
+      return getBackground(element.parent());
+    } else {
+      // return known 'false' value
+      return false;
+    }
+  }
+
+  $(function() {
+    // alert(getBackground($("#example")));
+    console.log('Background color is: ' + getBackground($("#example")));
+  });
+</script>
+
+
+/*********************\
+ * JavaScript Trends *
+\*********************/
+
+// Please refactor this promise-based function that uses
+// a chain of `then`s into `async`/`await`.  Assume the `store` object
+// passed in has an asynchronous method named `.findAll(<tablename>)` that returns all rows for
+// a particular 'table' over XHR; and an asynchronous method named `.query(<tablename>, <criteria>)` that will
+// return all rows matching a set of criteria described by an object for a given table over XHR.
+
+const model = store =>
+  store
+    .findAll('categories')
+    .then(
+      categories =>
+        store.query('entries', {
+          categoryId: categories.find(c => c.isCurrent).id,
+        }),
+      err => {
+        if (err.statusCode === '401') {
+          return store.findAll('entries');
+        }
+        throw err;
+      }
+    )
+    .then(
+      entries =>
+        entries.length
+          ? Promise.all([
+              entries,
+              store.findAll('users'),
+              store.findAll('votes'),
+            ])
+          : [entries, [], []]
+    )
+    .then(([entries, users, votes]) => ({ entries, users, votes }));
+
+    return new Promise((resolve, reject) => {
+      try {
+        if(store !== undefined) {
+          store.findAll('categories')
+          .then(
+            categories =>
+                store.query('entries', {
+                  categoryId: categories.find(c => c.isCurrent).id,
+                }),
+              err => {
+                if (err.statusCode === '401') {
+                  return store.findAll('entries');
+                }
+                throw err;
+              }
+          )
+          .then(
+            entries =>
+                entries.length
+                  ? Promise.all([
+                      entries,
+                      store.findAll('users'),
+                      store.findAll('votes'),
+                    ])
+                  : [entries, [], []]
+          )
+          .then(([entries, users, votes]) => ({ entries, users, votes }));
+          resolve();
+        }
+        else {
+          console.log('Error');
+          reject();
+        }
+      }
+      catch((error) =>{
+        console.log('Exception: ' + error.message);
+      });
+    });
+
+    //NOTE: Not sure whether this will work or not as i have not tried with real time data.
+
+
+/*************\
+ * Debugging *
+\*************/
+
+// Please visit this URL:
+// https://s.codepen.io/datchley/debug/GYeYbd
+
+// Using the development tools in your favorite browser, please do the
+// following tasks. Please also provide a screenshot of how you used the
+// development tools for each of the tasks.
+
+For code development purpose i use IntelliJ IDEA
+For debugging purpose, default inspector of browser is used
+For getting current value of 'washingtonAve', output is printed on browser's console
+
+// What function is locking the thread for so long?
+const nameOfFunctionLockingThread = 'ANSWER HERE';
+_.almond at line number 3263 is an IIFE which calls _.times for 5918 and executes forEach 5918 time which locks the thread
+
+// Please set a breakpoint on line 1706.
+// What is the value of the variable `washingtonAve` at that breakpoint?
+const washingtonAve = 'Washington Avenue';
+
+// Please set a breakpoint on line 2061.
+// What is the value of the variable `theLoop` when the variable `cwe` has a
+// value of `'central west end'`?
+
+
+//I have added an if statement to check if cwe has 'central west end' then set debugger in place;
+//Which gives value of 'theLoop' as '5177'
+const theLoop = '5177';
+
+// What is the value of the `X-Best-Restaurant` header on the `POST` to `/opinions`?
+const xBestRestaurant = 'disco';
+
+
+
+/*******\
+ * CSS *
+\*******/
+
+// Please define the following to the best of your knowledge. If you aren't
+// familiar with a topic, just answer "I don't know" and move to the next one.
+
+// The CSS Box Model
+const cssBoxModel = `
+  The CSS box model is essentially a box that wraps around every HTML element. It consists of: margins, borders, padding, and the actual content
+  The content of each box is determined by following four parameters:
+      1. The height/width of the actual content of the box (text, images, ...)
+      2. Padding of the box
+      3. Border surrounding the box, if present and
+      4. Margin is the space around the border
+`;
+
+// CSS Grid
+const cssGrid = `
+  CSS Grid is a brand new layout system in CSS! It's not a framework or library - it's an addition to the language that allows us to quickly create flexible, two dimensional layouts.
+  The CSS Grid Layout Module offers a grid-based layout system, with rows and columns, making it easier to design web pages without having to use floats and positioning.
+`;
+
+// Flexbox
+const flexbox = `
+  The flexbox is layout model that makes it easier to design flexible responsive layout structure without using float or positioning.
+  The flexbox properties are supported in all modern browsers.
+  Flexbox requires a flex container that wraps flex items. In flex container, the  display property is to be set to flex:
+`;
+
+// CSS Specificity
+const cssSpecificity = `
+  If there are two or more conflicting CSS rules that point to the same element, the browser follows some rules to determine which one is most specific and therefore wins out.
+  Specificity can be considered as a score/rank that determines which style declarations are ultimately applied to an element.
+  The universal selector (*) has low specificity, while ID selectors are highly specific!
+`;
+
+// Media Queries
+const mediaQueries = `
+  Media queries are used by webpage  to adapt to different screen sizes and resolutions. They are a fundamental part of responsive web design and are used to customize the appearance of websites for multiple devices.
+  Media queries may be inserted within a webpage's HTML or included in a separate .CSS file referenced by the webpage.
+  It uses the @media rule to include a block of CSS properties only if a certain condition is true.
+  Some typical breakpoints
+
+  /* Extra small devices (phones, 600px and down) */
+  @media only screen and (max-width: 600px) {...}
+
+  /* Small devices (portrait tablets and large phones, 600px and up) */
+  @media only screen and (min-width: 600px) {...}
+
+  /* Medium devices (landscape tablets, 768px and up) */
+    @media only screen and (min-width: 768px) {...}
+
+  /* Large devices (laptops/desktops, 992px and up) */
+  @media only screen and (min-width: 992px) {...}
+
+  /* Extra large devices (large laptops and desktops, 1200px and up) */
+  @media only screen and (min-width: 1200px) {...}
+`;
+
+// Transitions, Keyframes (and the difference between the two)
+const transitionsAndKeyframes = `
+  //Transitions:
+  //It allows us to change property values smoothly in a given duration
+  example:
+  div {
+    width: 100px;
+    height: 100px;
+    background: blue;
+    transition: width 1s;   // This is transition style rule declred here
+  }
+
+  div:hover {
+    width: 300px;
+  }
+  // When using above a div moves with given transition duration and speed upto div's width is 300px on hover
+
+  //Key Frames:
+  // Used for animations. Set of style rules are changed to see the effect
+  // @keyframes __animation__name {keyframe-selector {css-style-rules;}}
+  //example:
+  div {
+      width: 100px;
+      height: 100px;
+      background: red;
+      position: relative;
+      animation: move 5s infinite;    // move is animation name. As infinite is mention here so animation will start whenever page loads and will never stop
+  }
+
+  @keyframes move {
+    0%   {top: 0px;}
+    25%  {top: 200px;}
+    75%  {top: 50px}
+    100% {top: 100px;}
+  }
+
+  // Difference between transitions and keyframes
+  // 1. Transitions does not change css properties but css properties are changed in keyframes.
+  // 2. Transitions are limited to initial and final state but animations can include many intermediate states.
+  // 3. Transitions require a trigger to run eg: div:hover but animations don't.
+  // 4. Keyframes animation are more dynamic and flexible than transitions.
+`;
+
+// Please answer the following questions to the best of your knowledge. If you aren't
+// familiar with a topic, just answer "I don't know" and move to the next one.
+
+// What is a clearfix and when do you need one?
+const clearfix = `
+  A clearfix can be used by an element to automatically clear its child elements.  It allows a container to wrap it's floated children. Without a clearfix, a container does not wrap around its floated children and collapses.
+  It's generally used in float layouts where elements are floated to be stacked horizontally.
+`;
+
+// What thought process do you use to decide whether to use floats, flexbox,
+// or grid to lay out a page?
+const floatsFlexboxOrGrid = `
+  Can be decided on following three parameters
+  1. Layout: what type of layout I am working on
+  2. Browser support:
+	CSS Grid is not supported in Opera Mini
+  3. If you only need to define a layout as a row or a column, then you probably need flexbox. If you want to define a grid and fit content into it in two dimensions — you need the grid.
+`;
+
+// Go to the following url, https://codepen.io/datchley/pen/NOJERV?editors=0110
+// Follow the instructions and recreate the layout and elements in the example
+// image.  You can fork this codepen (click on the 'Fork' button at the top) to
+// create your answer and post a link to your answer below
+const recreationUrl = https://codepen.io/anon/pen/xQMoxQ?editors=1100
+
+/*******************************\
+ * Object-Oriented Programming *
+\*******************************/
+
+// Please define the following to the best of your ability. If you aren't
+// familiar with a topic, just answer "I don't know" and move to the next one.
+// This should all be based on the latest version of Javascript/EcmaScript.
+
+// Class, Prototype and Object (and the difference between them)
+const classPrototypeAndObject = `
+  Class is just a blue print of javascript's existing prototype based inheritance.
+  Class defines objects that can be modified whenever required in runtime
+  ES5:
+  function Employee(fname, lname) {
+      this.fname = fname;
+      this.lname = lname;
+  }
+  ES6:
+  class Employee {
+    constructor(fname, lname) {
+      this.fname = fname;
+      this.lname = lname;
+    }
+  }
+
+  Prototype:
+  Prototypes are just objects that can be changed at runtime
+  Consider following example:
+  class Employee {
+      constructor(name) {
+        this.name = name;
+      }
+
+      printName() {
+        console.log(this.name);
+      }
+  }
+  let sameer = new Employee('Sameer');
+  let dave = new Employee('Dave');
+
+  sameer.__proto__.printName = () => {
+    return 'Sumit';
+  };
+  dave.printName() //-> Sumit
+  Here, changing the method on the prototype of 'sameer' changes the result on dave as well.
+
+  Object:
+  Everything in javascript is an Object.
+  It is an instance which contains set of key value pairs
+  let me = {
+    firsName: 'Sameer',
+    lastName: 'Sawakare'
+  };
+
+`;
+
+// Instantiation: what are the ways we can create object instances
+const instantiation = `
+  let myObj = new Object(); //-> Object constructor
+
+  let myObj = Object.create(null); //-> Object.create() method
+
+  let myObj = {}; //-> Using object literal
+
+  let obj = function(name) {
+    this.name = name;
+  }
+  let myObj = new Obj('hi');    //-> Using function constructor
+
+  class myObject  {
+    constructor(name) {
+      this.name = name;
+    }
+  }
+  let myObj = new myObject("hello"); //-> ES6 class syntax
+`;
+
+// Class Methods, Static Methods (and the difference between the two)
+const classAndStaticMethods = `
+  Consider following example:
+
+  class Employee {
+    constructor(name) {
+      this.name = name;
+    }
+
+    printName() {
+      console.log(this.name);
+    }
+
+    static printMe() {
+      console.log('hey');
+    }
+  }
+
+  Here, printName() method is a class method which can be called whenever new instance is made of Employee like:
+  let me = new Employee('Sameer');
+  me.printName(); //-> Sameer
+  but printMe() can be called only without instantiating the class Employee.printMe();. These kind of static method are only used to create utility functions
+`;
+
+// Constructors
+const constructors = `
+  Method for creating and initializing an object created within a class
+  class Employee {
+    constructor() {
+      this.name = 'Sameer';
+    }
+  }
+
+  let me = new Employee();
+  console.log(me.name); //-> 'Sameer'
+`;
+
+// Superclass
+const superclass = `
+  I don't know, can only think of keyword super which is used to call parent class but not sure
+`;
+
+// Inheritance
+const inheritance = `
+  inherit properties from another class is inheritance. Uses keyword extends
+  example:
+  class Vehicle {
+    constructor (name, type) {
+      this.name = name;
+      this.type = type;
+    }
+
+    getName () {
+      return this.name;
+    }
+
+    getType () {
+      return this.type;
+    }
+
+  }
+  class Car extends Vehicle {
+    constructor (name) {
+      super(name, 'car');
+    }
+
+    getName () {
+      return 'It is a car: ' + super.getName();
+    }
+
+  }
+  let car = new Car('Mercedes');
+  console.log(car.getName()); //-> It is a car: Mercedes
+  console.log(car.getType()); //-> car
+`;
+
+
+
+/**************************\
+ * Functional Programming *
+\**************************/
+
+// Please define the following to the best of your ability. If you aren't
+// familiar with a topic, just answer "I don't know" and move to the next one.
+// This should all be based on the latest version of Javascript/EcmaScript.
+
+// Pure function, Impure function (and the difference between the two)
+const pureAndImpureFunction = `
+  //-> Pure functions:
+  return value of pure functions depends on its arguments
+  Modifications on arguments are not done
+  calcSquare = (x) => {
+    return x * x;
+  };
+
+  //-> Impure functions:
+  return value never depends on its passed arguments. Modifications on arguments are usually done here
+  squareAll = (items) => {
+    let len = items.length;
+    for (let i = 0; i < len; i++) {
+      items[i] = items[i] * items[i];
+    }
+    return items;
+  };
+`;
+
+// Callback function
+const callbackFunction = `
+  A callback is a function that is passed into another function as an argument to be executed later.
+  // consider filtering an array of numbers whose value is less than 5
+  const numbers = [3, 4, 10, 20];
+  const lesserThanFive = numbers.filter(num => num < 5);
+
+  // Now, if you do the above code with named functions, filtering the array would look like this instead:
+  const numbers = [3, 4, 10, 20];
+  const getLessThanFive = num => num < 5;
+  // Passing getLessThanFive function into filter
+  const lesserThanFive = numbers.filter(getLessThanFive);
+
+  getLessThanFive is a callback and numbers.filter is a function that accepts a callback function
+`;
+
+// Immutability
+const immutability = `
+  changing old value of a variable to a new one is called mutability
+  example:
+  const me = {
+    name: 'Sameer',
+    age: 28
+  }
+  const newMe = me
+  newMe.age = 30;
+  console.log(newMe === me) //-> true
+  console.log(me) //-> {name: 'Sameer', age: 30}
+
+  //To overcome this we should create a new Object
+  const me = {
+      name: 'Sameer',
+      age: 28
+    }
+  const newMe = Object.assign({}, me, {
+    age: 30
+  })
+  console.log(newMe === me) //-> false
+  console.log(me) //-> {name: 'Sameer', age: 20}
+  console.log(newMe) //-> {name: 'Sameer', age: 30}
+`;
+
+// Function Expressions, Function Declarations (and the difference between the two)
+const functionExpressionsAndDeclarations = `
+  Function declaration:
+  A Function Declaration defines a named function variable
+  function me() {
+    return 'Sameer';
+  }
+
+  Function expression:
+  A Function Expression defines a function as a part of a larger expression syntax (typically a variable assignment )
+  let a = function me() {
+      return 'Sameer';
+  }
+`;
+
+// Immediately-Invoked Function Expressions (IIFEs) and when/why to use them
+const iife = `
+  (function () {
+      // logic here
+  })();
+
+  why?
+  The primary reason to use an IIFE is to obtain data privacy.
+  Because JavaScript's var scopes variables to their containing function, any variables declared
+  within the IIFE cannot be accessed outside.
+
+  when?
+  To avoid declaring variables in global scope
+`;
+
+
+/***************\
+ * Code Review *
+\***************/
+
+// When reviewing the following code, what changes might you suggest?
+// Please leave JavaScript comments in this file with the suggestions you'd
+// make to the developer who wrote this code.  The code below shows multiple
+// files using Javascript modules (import/export).
+
+
+// File: utils/stats.js //
+export const voteStats = (votes, existingStats) => {
+  if (!Array.isArray(votes)) {
+    throw new Error('You must pass an array of votes to voteStats');
+  }
+
+  const ret = [];                                       // I would prefer using let here
+  for (const v of votes) {                              // I would prefer let rather than using const because sometimes reassigning a variable is required
+    const hash = {};
+    hash.count = v.count;
+    hash.userId = v.user.id;
+    ret.push(hash);
+  }
+  for (const stat of existingStats) {
+    ret.push(stat);
+  }
+  return ret;
+};
+
+
+// File: utils/stats-test.js //
+import { voteStats } from './stats';
+
+describe('voteStats', () => {
+  it('should calculate new stats after being fed existing stats and stats about votes', () => {
+    expect(
+      voteStats(
+        [
+          { count: 22, user: { id: 121 } },
+          { count: 61, user: { id: 122 } },
+          { count: 93, user: { id: 123 } },
+        ],
+        [
+          { count: 11, userId: 118 },
+{ count: 42, userId: 119 },
+          { count: 78, userId: 120 },
+        ]
+      )
+    ).toEqual([
+      { count: 11, userId: 118 },
+      { count: 42, userId: 119 },
+      { count: 78, userId: 120 },
+      { count: 22, userId: 121 },
+      { count: 61, userId: 122 },
+      { count: 78, userId: 123 },
+    ]);
+  });
+});
+
+
+// File: user-actions.js //
+import { voteStats } from './utils/stats';
+
+export default class {                              // export default class __classname__ is missing
+  constructor(votes = [], stats = []) {             // super should be called here
+    this.stats = voteStats(votes, stats);           // should probably use state variable here instead of using this.stats
+}
+
+  render() {
+    return `<ul>
+      ${this.stats.map(                             // i would call a function here like this.buildTemplate(this.stats) here and map it there and return so my render method looks clean
+        stat => `<li>User ID ${stat.userId} took ${stat.count} actions</li>`        // key={} is missing here which is a good practice to follow
+      )}
+    </ul>`;
+  }
+}
